@@ -6,15 +6,13 @@ import AddRootFolder from '../Home/AddRootFolder'
 
 export default function ArcTabel() {
     let [ArcData, setArcData] = useState()
-    let { setId, setChildPath, setPath } = useContext(ArcContext)
-    let [loading, isLoading] = useState(false);
+    let { setId, setPath } = useContext(ArcContext)
     let [depName, setDepName] = useState('')
     let [errorMsg, setErrorMsg] = useState("");
-    let navigate = useNavigate()
+
     async function getArcPageData() {
         let token = localStorage.getItem("token");
-        let ip = "192.168.2.25";
-        isLoading(true);
+        let ip = '192.168.2.21';
         let { data } = await axios
             .get(`http://${ip}:5678/folder/root`, {
                 headers: {
@@ -23,11 +21,9 @@ export default function ArcTabel() {
             })
             .catch((err) => {
                 setErrorMsg(err.response.data.message);
-                isLoading(false);
             });
         setDepName(localStorage.getItem("depName"));
         setArcData(data);
-        isLoading(false);
     }
 
     useEffect(() => {
@@ -37,7 +33,7 @@ export default function ArcTabel() {
 
     async function deleteItem(id, path) {
         let token = localStorage.getItem('token')
-        let ip = "192.168.2.25";
+        let ip = '192.168.2.21';
         let { data } = await axios.delete(`http://${ip}:5678/item/${id}`, {
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -47,10 +43,26 @@ export default function ArcTabel() {
         console.log(data)
         window.location.reload()
     }
+
     function clickFolder(id, path) {
         setId(id);
         setPath(path);
     }
+
+    useEffect(() => {
+        let handlePopstate = () => {
+            console.log('df')
+        }
+
+        // Add event listener for the popstate event
+        window.addEventListener('popstate', handlePopstate);
+
+        // Clean up the event listener when the component unmounts
+        return () => {
+            window.removeEventListener('popstate', handlePopstate);
+        };
+    }, [])
+
     return <>
         <AddRootFolder />
         <div className="container">
@@ -65,11 +77,11 @@ export default function ArcTabel() {
                         <th scope="col"></th>
                     </tr>
                 </thead>
-                <tbody className='cursor-pointer'>
+                <tbody>
                     {ArcData ? ArcData.map((el, index) => (
-                        <tr key={el.id} onClick={() => { clickFolder(el.id, el.path) }}>
+                        <tr key={el.id} onClick={() => { return }} >
                             <td className='w-sm'>{el.isFolder ? <i className="fa-solid fa-folder text-sec mr-3"></i> : ''}</td>
-                            <td><Link to={`/childFolder/${el.id}`}>{el.name.split('-')[0]}</Link></td>
+                            <td onClick={() => { clickFolder(el.id, el.path) }}><Link to={`/childFolder/${el.id}`}>{el.name.split('-')[0]}</Link></td>
                             <td>{localStorage.getItem('depName')}</td>
                             <td>{`${new Date(el.createdAt).getDate()}/${new Date(el.createdAt).getMonth() + 1}/${new Date(el.createdAt).getFullYear()}`}</td>
                             <td><i onClick={() => { deleteItem(el.id, el.name) }} className="fa-solid fa-trash text-sec cursor-pointer"></i></td>
@@ -79,6 +91,5 @@ export default function ArcTabel() {
                 </tbody>
             </table>
         </div>
-
     </>
 }

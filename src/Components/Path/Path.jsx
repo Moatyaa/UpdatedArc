@@ -6,10 +6,10 @@ import { ArcContext } from '../../Context/ArcTabelContext';
 
 export default function Path() {
     let [data, setData] = useState([])
-    let { path, setPath } = useContext(ArcContext)
+    let { Ip } = useContext(ArcContext)
     async function getPath() {
         let token = localStorage.getItem("token");
-        let ip = "192.168.2.16";
+        let ip = '192.168.2.21';
         let response = await axios
             .get(`http://${ip}:5678/configs`, {
                 headers: {
@@ -27,7 +27,7 @@ export default function Path() {
     async function submit(values) {
         console.log(values)
         let token = localStorage.getItem("token");
-        let ip = "192.168.2.25";
+        let ip = '192.168.2.21';
         let response = await axios
             .post(`http://${ip}:5678/configs`, values, {
                 headers: {

@@ -5,24 +5,37 @@ import { ArcContext } from "../../Context/ArcTabelContext";
 import { DownOutlined } from '@ant-design/icons';
 import { Dropdown, Space } from 'antd';
 import { Modal } from 'antd';
-import { useFormik } from "formik";
+import { Field, useFormik, useField } from "formik";
 import * as Yup from "yup";
 import { Helmet } from "react-helmet";
+import { InboxOutlined } from '@ant-design/icons';
+import { message, Upload } from 'antd';
+
 
 export default function AddRootFolder() {
   const [modal2Open, setModal2Open] = useState(false);
-  let { pathArray } = useContext(ArcContext)
+  const [modal1Open, setModal1Open] = useState(false);
+  let { pathArray, setImgTitle } = useContext(ArcContext)
   let [displayedPath, setdisplayedPath] = useState('')
   let [backClick, setBackClick] = useState(false)
   let [errorMsg, setErrorMsg] = useState("");
   let depName = localStorage.getItem("depName");
+  const [selectedFile, setSelectedFile] = useState(null);
   let id = useParams()
+
+
   const items = [
     {
       label: (
         <p onClick={() => setModal2Open(true)}>إضافة مجلد <i className="fa-solid fa-folder-plus"></i></p>
       ),
       key: '0',
+    },
+    {
+      label: (
+        <p onClick={() => setModal1Open(true)}>إضافة ملف <i className="fa-regular fa-image"></i></p>
+      ),
+      key: '1',
     }
   ];
 
@@ -36,51 +49,97 @@ export default function AddRootFolder() {
     }), onSubmit: addFolder
   })
 
+  let formik1 = useFormik({
+    initialValues: {
+      file: null
+    }, onSubmit: addFolder,
+  })
+
+  function handleFileChange(event) {
+    setSelectedFile(event.target.files[0])
+  }
+
   async function addFolder(values) {
-    console.log(values)
     let depName = localStorage.getItem("depName")
     let token = localStorage.getItem("token");
     let data = {
       name: `${values.name}-${depName}`,
     }
-    let ip = "192.168.2.25";
-    if (id.id) {
-      console.log(id.id)
-      let response = await axios
-        .post(`http://${ip}:5678/folder/child`, {
-          name: `${values.name}`,
-          parentId: id.id
-        }, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        })
-        .catch((err) => {
-          console.log(err.response.data.message);
-          setErrorMsg(err.response.data.message);
-        });
-      window.location.reload()
+    let ip = '192.168.2.21';
 
+    if (selectedFile) {
+      if (id.id) {
+        let formData = new FormData();
+        formData.append('files', selectedFile); // Assuming `file` is a File object
+        formData.append('parentId', id.id);
+        formData.append('name', values.name);
+        console.log(formData);
+
+        let response = await axios
+          .post(`http://${ip}:5678/upload`, formData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          })
+          .catch((err) => {
+            console.log(err.response.data.message);
+            setErrorMsg(err.response.data.message);
+          });
+        window.location.reload()
+
+
+      } else {
+        let response = await axios
+          .post(`http://${ip}:5678/folder/root`, data, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          })
+          .catch((err) => {
+            console.log(err.response.data.message);
+            setErrorMsg(err.response.data.message);
+          });
+        window.location.reload()
+      }
     } else {
-      let response = await axios
-        .post(`http://${ip}:5678/folder/root`, data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          }
-        })
-        .catch((err) => {
-          console.log(err.response.data.message);
-          setErrorMsg(err.response.data.message);
-        });
-      window.location.reload()
+      if (id.id) {
+        let response = await axios
+          .post(`http://${ip}:5678/folder/child`, {
+            name: `${values.name}`,
+            parentId: id.id
+          }, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          })
+          .catch((err) => {
+            console.log(err.response.data.message);
+            setErrorMsg(err.response.data.message);
+          });
+        window.location.reload()
+
+      } else {
+        let response = await axios
+          .post(`http://${ip}:5678/folder/root`, data, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          })
+          .catch((err) => {
+            console.log(err.response.data.message);
+            setErrorMsg(err.response.data.message);
+          });
+        window.location.reload()
+      }
     }
+
   }
 
   async function getChildPath() {
     setBackClick(true)
     let token = localStorage.getItem('token')
     let id = window.location.pathname.split('/').slice(-1)[0]
-    let ip = "192.168.2.25";
+    let ip = '192.168.2.21';
     let { data } = await axios.get(`http://${ip}:5678/item/${id}/path`, {
       headers: {
         Authorization: `Bearer ${token}`
@@ -92,9 +151,7 @@ export default function AddRootFolder() {
   useEffect(() => {
     let handlePopstate = () => {
       getChildPath()
-      // window.location.pathname == '/login' || '/cover' ? window.history.pushState(null, '', '/arcTabel') : ''
-
-    };
+    }
 
     // Add event listener for the popstate event
     window.addEventListener('popstate', handlePopstate);
@@ -104,7 +161,6 @@ export default function AddRootFolder() {
       window.removeEventListener('popstate', handlePopstate);
     };
   }, [])
-
 
   return <>
     <Helmet>
@@ -126,7 +182,7 @@ export default function AddRootFolder() {
               </Space>
             </a>
           </Dropdown>
-          {window.location.pathname == '/arcTabel' ? '' : <h5 className="d-inline mx-3">{backClick ? displayedPath : localStorage.getItem('path').slice(2, -2)}</h5>}
+          {window.location.pathname == '/ArcTabel' ? localStorage.setItem('path', '') : <h5 className="d-inline mx-3">{backClick ? displayedPath : localStorage.getItem('path').slice(2, -2)}</h5>}
         </div>
 
         <div>
@@ -161,6 +217,41 @@ export default function AddRootFolder() {
                 <button type="button" onClick={() => { setModal2Open(false) }} className="ant-btn css-dev-only-do-not-override-1xg9z9n ant-btn-default"><span>إلغاء</span></button>
                 <button disabled={!(formik.isValid && formik.dirty)}
                   type="submit" onClick={() => { setModal2Open(false) }} className="fontFamily  ant-btn css-dev-only-do-not-override-1xg9z9n ant-btn-primary"><span>إضافه</span></button></div>
+            </form>
+          </Modal>
+          <Modal
+            title=""
+            centered
+            open={modal1Open}
+            onOk={() => setModal1Open(false)}
+            onCancel={() => setModal1Open(false)}
+            className='direction fontFamily'
+          >
+            <form className='mt-4' onSubmit={formik1.handleSubmit}>
+              <label htmlFor="name">إسم الملف</label>
+              <input
+                className="form-control my-1"
+                type="name"
+                id="name"
+                name="name"
+                value={formik1.values.name}
+                onChange={formik1.handleChange}
+                onBlur={formik1.handleBlur}
+              />
+              <input
+                className="form-control my-1"
+                type="file"
+                id="file"
+                name="file"
+                value={formik1.values.file}
+                onChange={handleFileChange}
+                onBlur={formik1.handleBlur}
+              />
+
+              <div className="ant-modal-footer show mt-4">
+                <button type="button" onClick={() => { setModal1Open(false) }} className="ant-btn css-dev-only-do-not-override-1xg9z9n ant-btn-default"><span>إلغاء</span></button>
+                <button disabled={!(formik1.isValid && formik1.dirty)}
+                  type="submit" onClick={() => { setModal1Open(false) }} className="fontFamily  ant-btn css-dev-only-do-not-override-1xg9z9n ant-btn-primary"><span>إضافه</span></button></div>
             </form>
           </Modal>
         </div>

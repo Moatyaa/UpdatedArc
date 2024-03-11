@@ -9,6 +9,8 @@ import Control from "./Components/Control/Control"
 import ArcContextProvider from "./Context/ArcTabelContext"
 import ChildFolder from "./Components/ChildFolder/ChildFolder"
 import ArcTabel from "./Components/ArcContent/ArcTabel"
+import ImageToPrint from "./Components/ImageToPrint/ImageToPrint"
+import Print from "./Components/Print/Print"
 
 
 export default function App() {
@@ -38,6 +40,12 @@ export default function App() {
         element:
           <ProtectedRoute><ChildFolder /></ProtectedRoute>
 
+      },
+      {
+        path: "imageToPrint",
+        element:
+          <ProtectedRoute><ImageToPrint /></ProtectedRoute>
+
       }, {
         index: true,
         element: <Cover />
@@ -51,7 +59,7 @@ export default function App() {
         element: <Login />
       }
     ]
-  }])
+  }, { path: 'print', element: <Print /> }])
   return <>
     <ArcContextProvider>
       <UserContextProvider>

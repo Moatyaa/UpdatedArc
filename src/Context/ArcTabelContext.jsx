@@ -6,6 +6,8 @@ export default function ArcContextProvider({ children }) {
     let [isChild, setIsChild] = useState('')
     let [pathArray, setPathArray] = useState([])
     let [idPath, setidPath] = useState('')
+    let [imgTitle, setImgTitle] = useState('')
+
 
 
     function setPath(path) {
@@ -15,7 +17,7 @@ export default function ArcContextProvider({ children }) {
     }
 
     return <>
-        <ArcContext.Provider value={{ ArcData, setArcData, parentId, setId, isChild, setIsChild, setPath, pathArray, idPath, setidPath }} >
+        <ArcContext.Provider value={{ imgTitle, setImgTitle, ArcData, setArcData, parentId, setId, isChild, setIsChild, setPath, pathArray, idPath, setidPath }} >
             {children}
         </ArcContext.Provider>
     </>

@@ -2,8 +2,8 @@ import React, { useContext } from "react";
 import "../../index.css";
 import { Link, useNavigate } from "react-router-dom";
 import { userContext } from "../../Context/UserContext";
-import { DownOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Dropdown, message, Space, Tooltip } from "antd";
+import { UserOutlined } from "@ant-design/icons";
+import { Dropdown, Space } from "antd";
 
 export default function Navbar() {
   let { token, setToken, role, firstName } = useContext(userContext);
@@ -31,13 +31,14 @@ export default function Navbar() {
       onClick: handleMenuClick,
     },
   ];
+
   const menuProps = {
     items,
   };
 
   return (
     <>
-      <nav className="nav container navbar shadow">
+      <nav className="nav container navbar b-shadow">
         {token ? (
           <div className="text-sec d-flex w-100 justify-content-between align-items-center">
             <h2 className="fw">منظومة الأرشيف</h2>

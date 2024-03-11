@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Button, Modal } from 'antd';
 import * as Yup from "yup";
 import { useFormik } from 'formik';
 import axios from 'axios';
+import { ArcContext } from '../../Context/ArcTabelContext';
 
 export default function AddDepModal() {
     const [modal2Open, setModal2Open] = useState(false);
     let [errorMsg, setErrorMsg] = useState("");
-
     async function submit(values) {
         let token = localStorage.getItem("token");
-        let ip = "192.168.2.25";
+        let ip = '192.168.2.21';
         let response = await axios
             .post(`http://${ip}:5678/department`, values, {
                 headers: {

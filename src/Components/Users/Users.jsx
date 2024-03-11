@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import axios from 'axios';
+import { ArcContext } from '../../Context/ArcTabelContext';
 
 export default function Users() {
     let [dataa, setData] = useState([])
+    let { Ip } = useContext(ArcContext)
     async function getUsers(values) {
         let token = localStorage.getItem("token");
-        let ip = "192.168.2.16";
+        let ip = '192.168.2.21';
         let response = await axios
             .get(`http://${ip}:5678/user`, {
                 headers: {
@@ -20,7 +22,7 @@ export default function Users() {
     }
     async function deletUsers(id) {
         let token = localStorage.getItem("token");
-        let ip = "192.168.2.25";
+        let ip = '192.168.2.21';
         let response = await axios
             .delete(`http://${ip}:5678/user/${id}`, {
                 headers: {

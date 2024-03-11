@@ -4,7 +4,7 @@
 :root {
     --main-color: #812e1d;
     --light-color: #343432;
-    --shadow: rgba(145, 158, 171, .2) 0px 2px 4px -1px, rgba(145, 158, 171, .14) 0px 4px 5px 0px, rgba(145, 158, 171, .12) 0px 1px 10px 0px;
+    --shadow: rgba(145, 158, 171, .2) 0px 2px 4px -1px, rgba(145, 158, 171, .12) 0px 1px 10px 0px;
     --font-family: "Cairo", sans-serif;
     --rating-color: #ffc908;
 }
@@ -31,7 +31,7 @@
     direction: rtl;
 }
 
-.shadow {
+.b-shadow {
     box-shadow: var(--shadow);
 }
 
@@ -84,12 +84,16 @@ a:hover {
 }
 
 .img-holder {
-    max-width: 100%;
+    width: 100%;
 }
 
 .img {
     max-width: 100vw;
     height: calc(100vh - 60px);
+}
+
+.printedImg {
+    height: 100vh !important;
 }
 
 .brdr {
@@ -155,8 +159,8 @@ a:hover {
 }
 
 .accordion-button:not(.collapsed) {
-    background-color: var(--light-color);
-    color: white;
+    background-color: white;
+    color: var(--light-color);
     box-shadow: inset 0 calc(-1 * var(--bs-accordion-border-width)) 0 var(--bs-accordion-border-color);
 }
 
@@ -254,3 +258,17 @@ a:hover {
     text-decoration: none;
     color: inherit;
   }
+
+.fit-width {
+    width: fit-content;
+  }
+
+  @media print {
+    /* Hide the default header and footer */
+    @page {
+      size: A4;
+      margin: 0;
+    }
+  }
+  
+

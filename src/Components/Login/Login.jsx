@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import "../../index.css";
@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Audio } from "react-loader-spinner";
 import { userContext } from "../../Context/UserContext";
 import { Helmet } from "react-helmet";
+import { ArcContext } from "../../Context/ArcTabelContext";
 
 export default function Login() {
   let { setToken, setFirstName, setRole } = useContext(userContext);
@@ -14,8 +15,14 @@ export default function Login() {
   let [loading, isLoading] = useState(false);
   let navigate = useNavigate();
 
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      navigate('/ArcTabel')
+    }
+  }, [])
+
   async function submit(values) {
-    let ip = "192.168.2.25";
+    let ip = '192.168.2.21';
     isLoading(true);
     let { data } = await axios
       .post(`http://${ip}:5678/login`, values)

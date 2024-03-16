@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { ArcContext } from "../../Context/ArcTabelContext";
 import { DownOutlined } from '@ant-design/icons';
 import { Dropdown, Space } from 'antd';
@@ -15,6 +15,7 @@ import { message, Upload } from 'antd';
 export default function AddRootFolder() {
   const [modal2Open, setModal2Open] = useState(false);
   const [modal1Open, setModal1Open] = useState(false);
+  const [modal3Open, setModal3Open] = useState(false);
   let { pathArray, setImgTitle } = useContext(ArcContext)
   let [displayedPath, setdisplayedPath] = useState('')
   let [backClick, setBackClick] = useState(false)
@@ -22,6 +23,67 @@ export default function AddRootFolder() {
   let depName = localStorage.getItem("depName");
   const [selectedFile, setSelectedFile] = useState(null);
   let id = useParams()
+  const [ws, setWs] = useState(null);
+  useEffect(() => {
+    const wsImpl = window.WebSocket || window.MozWebSocket;
+    const newWs = new wsImpl('ws://localhost:8181/');
+    setWs(newWs);
+
+    // Cleanup function
+    return () => {
+      if (newWs) {
+        newWs.close();
+      }
+    };
+  }, []); // Empty dependency array to run only once on component mount
+  const scanImage = (values) => {
+    localStorage.setItem('imgTtitlee', values.name)
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send("1100");
+    } else {
+      alert('فشل الاتصال');
+    }
+  };
+
+  useEffect(() => {
+    const handleWebSocketMessage = async (event) => {
+      if (event.data instanceof Blob) {
+        const f = event.data;
+        let ip = '192.168.2.21';
+        let token = localStorage.getItem("token");
+        // upload the image to the server
+        const formData = new FormData();
+        formData.append("files", f, f.name + ".png");
+        formData.append("parentId", id.id);
+        localStorage.setItem('imgNum', localStorage.getItem('imgTtitlee'))
+        formData.append("name", localStorage.getItem('imgTtitlee'));
+
+        let response = await axios
+          .post(`http://${ip}:5678/upload`, formData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            }
+          })
+          .catch((err) => {
+            console.log(err.response.data.message);
+            setErrorMsg(err.response.data.message);
+          });
+        window.location.reload()
+      }
+    };
+
+    if (ws) {
+      ws.addEventListener('message', handleWebSocketMessage);
+    }
+
+    // Cleanup function
+    return () => {
+      if (ws) {
+        ws.removeEventListener('message', handleWebSocketMessage);
+      }
+    };
+  }, [ws]);
+
 
 
   const items = [
@@ -36,6 +98,12 @@ export default function AddRootFolder() {
         <p onClick={() => setModal1Open(true)}>إضافة ملف <i className="fa-regular fa-image"></i></p>
       ),
       key: '1',
+    },
+    {
+      label: (
+        <p onClick={() => setModal3Open(true)}>سحب الملف</p>
+      ),
+      key: '2',
     }
   ];
 
@@ -53,6 +121,12 @@ export default function AddRootFolder() {
     initialValues: {
       file: null
     }, onSubmit: addFolder,
+  })
+
+  let formik3 = useFormik({
+    initialValues: {
+      name: ''
+    }, onSubmit: scanImage
   })
 
   function handleFileChange(event) {
@@ -73,7 +147,6 @@ export default function AddRootFolder() {
         formData.append('files', selectedFile); // Assuming `file` is a File object
         formData.append('parentId', id.id);
         formData.append('name', values.name);
-        console.log(formData);
 
         let response = await axios
           .post(`http://${ip}:5678/upload`, formData, {
@@ -145,7 +218,7 @@ export default function AddRootFolder() {
         Authorization: `Bearer ${token}`
       }
     }).catch(err => err)
-    setdisplayedPath(data.path)
+    setdisplayedPath(data.path);
   }
 
   useEffect(() => {
@@ -160,7 +233,9 @@ export default function AddRootFolder() {
     return () => {
       window.removeEventListener('popstate', handlePopstate);
     };
-  }, [])
+  }, [displayedPath])
+
+
 
   return <>
     <Helmet>
@@ -182,7 +257,7 @@ export default function AddRootFolder() {
               </Space>
             </a>
           </Dropdown>
-          {window.location.pathname == '/ArcTabel' ? localStorage.setItem('path', '') : <h5 className="d-inline mx-3">{backClick ? displayedPath : localStorage.getItem('path').slice(2, -2)}</h5>}
+          {window.location.pathname == '/arcTabel' ? localStorage.setItem('path', '') : <h5 className="d-inline mx-3">{backClick ? displayedPath : localStorage.getItem('path').slice(2, -2)}</h5>}
         </div>
 
         <div>
@@ -252,6 +327,31 @@ export default function AddRootFolder() {
                 <button type="button" onClick={() => { setModal1Open(false) }} className="ant-btn css-dev-only-do-not-override-1xg9z9n ant-btn-default"><span>إلغاء</span></button>
                 <button disabled={!(formik1.isValid && formik1.dirty)}
                   type="submit" onClick={() => { setModal1Open(false) }} className="fontFamily  ant-btn css-dev-only-do-not-override-1xg9z9n ant-btn-primary"><span>إضافه</span></button></div>
+            </form>
+          </Modal>
+          <Modal
+            title=""
+            centered
+            open={modal3Open}
+            onOk={() => setModal3Open(false)}
+            onCancel={() => setModal3Open(false)}
+            className='direction fontFamily'
+          >
+            <form className='mt-4' onSubmit={formik3.handleSubmit}>
+              <label htmlFor="name">إسم الملف</label>
+              <input
+                className="form-control my-1"
+                type="name"
+                id="name"
+                name="name"
+                value={formik3.values.name}
+                onChange={formik3.handleChange}
+                onBlur={formik3.handleBlur}
+              />
+              <div className="ant-modal-footer show mt-4">
+                <button type="button" onClick={() => { setModal3Open(false) }} className="ant-btn css-dev-only-do-not-override-1xg9z9n ant-btn-default"><span>إلغاء</span></button>
+                <button disabled={!(formik3.isValid && formik3.dirty)}
+                  type="submit" onClick={() => { setModal3Open(false) }} className="fontFamily  ant-btn css-dev-only-do-not-override-1xg9z9n ant-btn-primary"><span>سحب الملف</span></button></div>
             </form>
           </Modal>
         </div>

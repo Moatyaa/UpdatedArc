@@ -11,6 +11,7 @@ import ChildFolder from "./Components/ChildFolder/ChildFolder"
 import ArcTabel from "./Components/ArcContent/ArcTabel"
 import ImageToPrint from "./Components/ImageToPrint/ImageToPrint"
 import Print from "./Components/Print/Print"
+import ScanComponent from "./Components/Scan/Scan"
 
 
 export default function App() {
@@ -47,16 +48,19 @@ export default function App() {
           <ProtectedRoute><ImageToPrint /></ProtectedRoute>
 
       }, {
-        index: true,
+        path: 'cover',
         element: <Cover />
       }, {
       }, {
-        path: "cover",
-        element:
-          <Cover />
+        index: true,
+        element: localStorage.getItem("token") ? <ArcTabel /> : <Cover />
       }, {
         path: "login",
         element: <Login />
+      }
+      , {
+        path: "scan",
+        element: <ScanComponent />
       }
     ]
   }, { path: 'print', element: <Print /> }])
